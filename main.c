@@ -98,10 +98,11 @@ void reset_mp(void) {
 
     mp_obj_list_init(mp_sys_argv, 0);
 }
+#define STRING_LIST(...) {__VA_ARGS__, ""}
 
 bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
 
-    for (int i = 0; *(filenames[i]); i++) {
+    for (int i = 0; filenames[i] != (char*)""; i++) {
         mp_import_stat_t stat = mp_import_stat(filenames[i]);
         if (stat != MP_IMPORT_STAT_FILE) {
             continue;
@@ -136,9 +137,10 @@ bool start_mp(safe_mode_t safe_mode) {
         serial_write(MSG_SAFE_MODE_NO_MAIN);
     } else {
         new_status_color(MAIN_RUNNING);
-        const char *supported_filenames[] = {"code.txt", "code.py", "main.py", "main.txt",""};
-        const char *double_extension_filenames[] = {"code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
-                                                    "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py",""};
+
+        const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
+        const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
+                                                    "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
         found_main = maybe_run_list(supported_filenames, &result);
         if (!found_main){
             found_main = maybe_run_list(double_extension_filenames, &result);
@@ -263,7 +265,7 @@ int __attribute__((used)) main(void) {
         #endif
 
         // TODO(tannewt): Re-add support for flashing boot error output.
-        static const char *filenames[] ={"settings.txt", "settings.py", "boot.py", "boot.txt",""};
+        static const char *filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
         bool found_boot = maybe_run_list(filenames, NULL);
         (void) found_boot;
 
