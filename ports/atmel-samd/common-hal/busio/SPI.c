@@ -39,6 +39,8 @@
 #include "pins.h"
 //#include "shared_dma.h"
 
+// I have no idea if this is the right way to do this, just cargo culting
+extern busio_spi_obj_t status_apa102;
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
         const mcu_pin_obj_t * miso) {
@@ -59,7 +61,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         if (potential_sercom == NULL ||
         #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !defined(CIRCUITPY_BITBANG_APA102)
             (potential_sercom->SPI.CTRLA.bit.ENABLE != 0 &&
-             potential_sercom != status_apa102.spi_master_instance.hw &&
+             potential_sercom != status_apa102.spi_desc.dev.prvt &&
              !apa102_sck_in_use)) {
         #else
             potential_sercom->SPI.CTRLA.bit.ENABLE != 0) {

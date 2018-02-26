@@ -70,11 +70,12 @@ void rgb_led_status_init() {
                                               MICROPY_HW_APA102_MOSI,
                                               mp_const_none);
         #else
-        if (status_apa102.current_baudrate > 0) {
+        if (common_hal_busio_spi_deinited(&status_apa102)) {
             // Don't use spi_deinit because that leads to infinite
             // recursion because reset_pin may call
             // rgb_led_status_init.
-            spi_disable(&status_apa102.spi_master_instance);
+            spi_m_sync_disable(&status_apa102.spi_desc);
+
         }
         common_hal_busio_spi_construct(&status_apa102,
                                       MICROPY_HW_APA102_SCK,
@@ -108,6 +109,11 @@ void reset_status_led() {
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
         reset_pin(MICROPY_HW_APA102_MOSI->pin);
+
+        // this is the "root cause" of the  blow up because the second call to reset_pin results in
+        // a second call to rgb_led_status_init() which will (I think) fail because spi_m_sync_init
+        // (calling _spi_m_sync_init) will see that the enable bit for the sercom is already set
+
         reset_pin(MICROPY_HW_APA102_SCK->pin);
     #endif
 }

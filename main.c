@@ -231,6 +231,21 @@ int __attribute__((used)) main(void) {
 
     rgb_led_status_init();
 
+    // this should go white. I put this here to test that after the first init the dotstar works
+    new_status_color(WHITE);
+
+    // this should blow up. Calling this here to verify my assumption that two successive
+    // calls to rgb_status_init() will cause a crash. Normally the crash would happen when
+    // reset_mp below calls reset_status_led() which in turn calls rgb_led_status_init() twice, once for each pin
+
+    // a question I have is why the first (indirect)call to rgb_led_status_init in reset_status_led()
+    // *doesn't* cause a crash. Something happens between the first/initial call to rgb_led_status on 232
+    // and the first call to rgb_led_status_init in the reset that prevents it from crashing.
+
+    // comment this line out to see the normal path to the error through reset_status_led
+    rgb_led_status_init();
+
+
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
     mp_stack_ctrl_init();
